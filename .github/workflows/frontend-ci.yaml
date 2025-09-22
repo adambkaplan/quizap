@@ -1,0 +1,64 @@
+name: Frontend CI
+on:
+  pull_request:
+    paths:
+      - 'frontend/**'
+  push:
+    branches:
+      - main
+      - release*
+    paths:
+      - 'frontend/**'
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "./frontend"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: lts/*
+      - name: Install dependencies
+        run: npm install
+      - name: Run eslint
+        run: npm run lint
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "./frontend"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: lts/*
+      - name: Install dependencies
+        run: npm install
+      - name: Run tests
+        run: npm run test
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "./frontend"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: lts/*
+      - name: Install dependencies
+        run: npm install
+      - name: Attempt a build
+        run: npm run build
