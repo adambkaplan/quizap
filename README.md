@@ -5,3 +5,5 @@ QuiZap - An online quiz game!
 
 - [frontend](./frontend): Web user interface, using the [PatternFly](https://www.patternfly.org/)
   design framework.
+- [backend](./backend): Backend service, using the [Gin](https://github.com/gin-gonic/gin) web
+  framework.
