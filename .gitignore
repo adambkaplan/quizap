@@ -140,6 +140,7 @@ vite.config.ts.timestamp-*
 
 # Go build output
 backend/backend
+backend/quizap-backend
 
 # VSCode
 .vscode
