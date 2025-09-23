@@ -306,6 +306,30 @@ exports[`App tests should render default App component 1`] = `
           >
             Dashboard Page Title!
           </h1>
+          <div
+            style="margin-top: 20px;"
+          >
+            <svg
+              aria-label="Loading message from backend"
+              aria-valuetext="Loading..."
+              class="pf-v6-c-spinner pf-m-lg"
+              role="progressbar"
+              viewBox="0 0 100 100"
+            >
+              <circle
+                class="pf-v6-c-spinner__path"
+                cx="50"
+                cy="50"
+                fill="none"
+                r="45"
+              />
+            </svg>
+            <span
+              style="margin-left: 10px;"
+            >
+              Loading message from backend...
+            </span>
+          </div>
         </section>
       </main>
     </div>
