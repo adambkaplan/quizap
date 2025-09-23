@@ -138,5 +138,8 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
+# Go build output
+backend/backend
+
 # VSCode
 .vscode
