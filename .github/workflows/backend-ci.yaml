@@ -3,12 +3,16 @@ on:
   pull_request:
     paths:
       - 'backend/**'
+      - '.github/workflows/backend-ci.yaml'
+      - 'Makefile'
   push:
     branches:
       - main
       - release*
     paths:
       - 'backend/**'
+      - '.github/workflows/backend-ci.yaml'
+      - 'Makefile'
 
 jobs:
   build:
