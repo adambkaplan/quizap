@@ -4,7 +4,7 @@ QuiZap - An online quiz game!
 ## Components
 
 - [frontend](./frontend): Web user interface, using the [PatternFly](https://www.patternfly.org/)
-  design framework.
+  design framework. Containerized using [Cloud Native Buildpacks](https://buildpacks.io).
 - [backend](./backend): Backend service, using the [Gin](https://github.com/gin-gonic/gin) web
   framework.
 

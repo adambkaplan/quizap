@@ -3,12 +3,16 @@ on:
   pull_request:
     paths:
       - 'frontend/**'
+      - '.github/workflows/frontend-ci.yaml'
+      - 'Makefile'
   push:
     branches:
       - main
       - release*
     paths:
       - 'frontend/**'
+      - '.github/workflows/frontend-ci.yaml'
+      - 'Makefile'
 
 jobs:
   lint:
@@ -49,7 +53,9 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: lts/*
+      - name: Setup Pack CLI
+        uses: buildpacks/github-actions/setup-pack@v5.9.4
       - name: Install dependencies
         run: make frontend-install
-      - name: Attempt a build
-        run: make frontend-build
+      - name: Build container with pack
+        run: make frontend-build-container
