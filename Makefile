@@ -22,6 +22,14 @@ BACKEND_PORT := 8080
 # Frontend configuration
 FRONTEND_PORT := 9000
 
+# DOCKER_HOST for pack
+# Set to "inherit" when using rootless podman
+PACK_DOCKER_HOST := ""
+
+# CONTAINER_ENGINE for running containers
+# Set to "podman" when using rootless podman
+CONTAINER_ENGINE := "docker"
+
 ##@ Development Commands
 
 .PHONY: help
@@ -92,6 +100,16 @@ frontend-run: ## Run the frontend development server
 frontend-build: ## Build the frontend for production
 	@echo "$(GREEN)Building frontend for production...$(NC)"
 	cd $(FRONTEND_DIR) && npm run build
+
+.PHONY: frontend-build-container
+frontend-build-container: ## Build the frontend container with pack
+	@echo "$(GREEN)Building frontend container with pack...$(NC)"
+	pack build ghcr.io/adambkaplan/quizap/frontend:latest --path $(FRONTEND_DIR) --builder docker.io/paketobuildpacks/builder-jammy-base:latest --docker-host "$(PACK_DOCKER_HOST)"
+
+.PHONY: frontend-run-container
+frontend-run-container: ## Run the frontend in a container
+	@echo "$(GREEN)Running frontend container...$(NC)"
+	$(CONTAINER_ENGINE) run -d -p $(FRONTEND_PORT):8080 --name quizap-frontend ghcr.io/adambkaplan/quizap/frontend:latest
 
 .PHONY: frontend-test
 frontend-test: ## Run frontend tests
@@ -180,6 +198,12 @@ stop-backend: ## Stop backend server
 stop-frontend: ## Stop frontend server
 	@echo "$(GREEN)Stopping frontend server...$(NC)"
 	@pkill -f "webpack serve" || echo "$(YELLOW)No frontend process found$(NC)"
+
+.PHONY: stop-frontend-container
+stop-frontend-container: ## Stop frontend container
+	@echo "$(GREEN)Stopping frontend container...$(NC)"
+	$(CONTAINER_ENGINE) stop quizap-frontend || echo "$(YELLOW)No frontend container found$(NC)"
+	$(CONTAINER_ENGINE) rm quizap-frontend || echo "$(YELLOW)No frontend container found$(NC)"
 
 .PHONY: stop-all
 stop-all: stop-backend stop-frontend ## Stop all services

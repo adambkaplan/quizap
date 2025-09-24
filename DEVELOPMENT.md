@@ -9,6 +9,43 @@ This guide helps contributors get started with the Quizap project quickly and ef
 - **Go 1.21+** for backend development
 - **Node.js 18+** and **npm** for frontend development
 - **Make** (usually pre-installed on Linux/macOS)
+- **Docker** or **Podman** for containerization
+- **pack CLI** for building containers with Cloud Native Buildpacks
+
+### Installing pack CLI
+
+The project uses Cloud Native Buildpacks to build container images. Install the pack CLI:
+
+#### Linux/macOS (using Homebrew)
+```bash
+brew install buildpacks/tap/pack
+```
+
+#### Linux (using package manager)
+```bash
+# Ubuntu/Debian
+curl -sSL "https://github.com/buildpacks/pack/releases/latest/download/pack-v0.32.0-linux.tgz" | sudo tar -C /usr/local/bin/ --no-same-owner -xzv pack
+
+# Or download from GitHub releases
+wget https://github.com/buildpacks/pack/releases/latest/download/pack-v0.32.0-linux.tgz
+tar -xzf pack-v0.32.0-linux.tgz
+sudo mv pack /usr/local/bin/
+```
+
+#### Windows
+```powershell
+# Using Chocolatey
+choco install pack
+
+# Or download from GitHub releases
+# Download pack-v0.32.0-windows.zip from https://github.com/buildpacks/pack/releases
+# Extract and add to PATH
+```
+
+#### Verify Installation
+```bash
+pack version
+```
 
 ### First Time Setup
 
@@ -79,6 +116,14 @@ make build
 | `make frontend-format` | Format code with Prettier |
 | `make frontend-clean` | Clean build artifacts |
 
+### Container Commands
+
+| Command | Description |
+|---------|-------------|
+| `make frontend-build-container` | Build frontend container with pack CLI |
+| `make frontend-run-container` | Run frontend in a container |
+| `make stop-frontend-container` | Stop frontend container |
+
 ### Development Workflow
 
 | Command | Description |
@@ -122,6 +167,62 @@ quizap/
 ├── Makefile               # Development commands
 └── README.md              # Project overview
 ```
+
+## Container Development
+
+The project supports building and running the frontend as a container using Cloud Native Buildpacks.
+
+### Building the Frontend Container
+
+```bash
+# Build the frontend container using pack CLI
+make frontend-build-container
+
+# This command:
+# - Uses the pack CLI to build a container image
+# - Automatically detects the Node.js application
+# - Creates an optimized production-ready container
+# - Tags the image as ghcr.io/adambkaplan/quizap/frontend:latest
+```
+
+### Running the Frontend Container
+
+```bash
+# Run the frontend in a container
+make frontend-run-container
+
+# This command:
+# - Runs the container on port 9000
+# - Maps container port 8080 to host port 9000
+# - Names the container 'quizap-frontend'
+```
+
+### Container Management
+
+```bash
+# Stop the frontend container
+make stop-frontend-container
+
+# Check if container is running
+docker ps | grep quizap-frontend
+# or with podman
+podman ps | grep quizap-frontend
+```
+
+### Container Configuration
+
+The Makefile includes configuration options for different container environments:
+
+- **Docker**: Default container engine
+- **Podman**: Set `CONTAINER_ENGINE=podman` in Makefile
+- **Rootless Podman**: Set `PACK_DOCKER_HOST=inherit` in Makefile
+
+### Container vs Development Mode
+
+| Mode | Command | Port | Use Case |
+|------|---------|------|----------|
+| Development | `make frontend-run` | 9000 | Hot reload, debugging |
+| Container | `make frontend-run-container` | 9000 | Production-like testing |
 
 ## Development URLs
 
