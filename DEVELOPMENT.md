@@ -10,7 +10,8 @@ This guide helps contributors get started with the Quizap project quickly and ef
 - **Node.js 18+** and **npm** for frontend development
 - **Make** (usually pre-installed on Linux/macOS)
 - **Docker** or **Podman** for containerization
-- **pack CLI** for building containers with Cloud Native Buildpacks
+- **pack CLI** for building frontend containers with Cloud Native Buildpacks
+- **ko CLI** for building backend containers
 
 ### Installing pack CLI
 
@@ -45,6 +46,58 @@ choco install pack
 #### Verify Installation
 ```bash
 pack version
+```
+
+### Installing ko CLI
+
+The project uses [ko](https://ko.build/) to build Go container images. Install the ko CLI:
+
+#### Linux/macOS (using Homebrew)
+```bash
+brew install ko
+```
+
+#### Linux (using GitHub Releases)
+```bash
+# Set version and architecture
+VERSION=0.15.0  # choose the latest version (without v prefix)
+OS=Linux
+ARCH=x86_64  # or arm64, i386, s390x
+
+# Download and install
+curl -sSfL "https://github.com/ko-build/ko/releases/download/v${VERSION}/ko_${VERSION}_${OS}_${ARCH}.tar.gz" > ko.tar.gz
+tar xzf ko.tar.gz ko
+chmod +x ./ko
+sudo mv ko /usr/local/bin/
+```
+
+#### macOS (using GitHub Releases)
+```bash
+# Set version and architecture
+VERSION=0.15.0  # choose the latest version (without v prefix)
+OS=Darwin
+ARCH=x86_64  # or arm64
+
+# Download and install
+curl -sSfL "https://github.com/ko-build/ko/releases/download/v${VERSION}/ko_${VERSION}_${OS}_${ARCH}.tar.gz" > ko.tar.gz
+tar xzf ko.tar.gz ko
+chmod +x ./ko
+sudo mv ko /usr/local/bin/
+```
+
+#### Windows (using Scoop)
+```powershell
+scoop install ko
+```
+
+#### Build from Source (Go 1.16+)
+```bash
+go install github.com/google/ko@latest
+```
+
+#### Verify Installation
+```bash
+ko version
 ```
 
 ### First Time Setup
@@ -120,9 +173,15 @@ make build
 
 | Command | Description |
 |---------|-------------|
+| `make backend-build-container` | Build backend container with ko |
+| `make backend-run-container` | Run backend in a container |
+| `make stop-backend-container` | Stop backend container |
 | `make frontend-build-container` | Build frontend container with pack CLI |
 | `make frontend-run-container` | Run frontend in a container |
 | `make stop-frontend-container` | Stop frontend container |
+| `make build-containers` | Build both frontend and backend containers |
+| `make run-containers` | Run both frontend and backend containers |
+| `make stop-containers` | Stop both frontend and backend containers |
 
 ### Development Workflow
 
@@ -170,7 +229,32 @@ quizap/
 
 ## Container Development
 
-The project supports building and running the frontend as a container using Cloud Native Buildpacks.
+The project supports building and running both frontend and backend as containers using Cloud Native Buildpacks and ko respectively.
+
+### Building the Backend Container
+
+```bash
+# Build the backend container using ko
+make backend-build-container
+
+# This command:
+# - Uses the ko CLI to build a Go container image
+# - Automatically detects the Go application in the backend directory
+# - Creates an optimized production-ready container
+# - Tags the image as ghcr.io/adambkaplan/quizap/backend:latest
+```
+
+### Running the Backend Container
+
+```bash
+# Run the backend in a container
+make backend-run-container
+
+# This command:
+# - Runs the container on port 8080
+# - Maps container port 8080 to host port 8080
+# - Names the container 'quizap-backend'
+```
 
 ### Building the Frontend Container
 
@@ -200,29 +284,52 @@ make frontend-run-container
 ### Container Management
 
 ```bash
-# Stop the frontend container
+# Stop individual containers
+make stop-backend-container
 make stop-frontend-container
 
-# Check if container is running
-docker ps | grep quizap-frontend
-# or with podman
-podman ps | grep quizap-frontend
+# Stop all containers
+make stop-containers
+
+# Check if containers are running
+podman ps | grep quizap
+# or with docker
+docker ps | grep quizap
 ```
 
 ### Container Configuration
 
 The Makefile includes configuration options for different container environments:
 
-- **Docker**: Default container engine
-- **Podman**: Set `CONTAINER_ENGINE=podman` in Makefile
-- **Rootless Podman**: Set `PACK_DOCKER_HOST=inherit` in Makefile
+- **Podman**: Default container engine.
+- **Docker**: Set `CONTAINER_ENGINE=docker` when running make commands. Example:
+
+```sh
+make frontend-build-container CONTAINER_ENGINE=docker
+```
+
+Use the following procedure to push the images to your own container registry/repo:
+
+1. Log into your container registry with your container engine of choice (podman or docker).
+2. When invoking make commands, set the following make variables
+   1. `IMAGE_REPO` - set to your repository. Example: `quay.io/adambkaplan/quizap`.
+   2. `IMAGE_PUSH` - set to `true`
+   3. `IMAGE_TAG` (optional) - set to any value you wish. Defaults to `latest`.
+
+Example:
+
+```sh
+make frontend-build-container IMAGE_REPO=docker.io/myusername/myrepo IMAGE_TAG="v0.0.1" IMAGE_PUSH=true
+```
 
 ### Container vs Development Mode
 
-| Mode | Command | Port | Use Case |
-|------|---------|------|----------|
-| Development | `make frontend-run` | 9000 | Hot reload, debugging |
-| Container | `make frontend-run-container` | 9000 | Production-like testing |
+| Service | Mode | Command | Port | Use Case |
+|---------|------|---------|------|----------|
+| Backend | Development | `make backend-run` | 8080 | Hot reload, debugging |
+| Backend | Container | `make backend-run-container` | 8080 | Production-like testing |
+| Frontend | Development | `make frontend-run` | 9000 | Hot reload, debugging |
+| Frontend | Container | `make frontend-run-container` | 9000 | Production-like testing |
 
 ## Development URLs
 
