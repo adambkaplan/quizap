@@ -22,13 +22,25 @@ BACKEND_PORT := 8080
 # Frontend configuration
 FRONTEND_PORT := 9000
 
-# DOCKER_HOST for pack
-# Set to "inherit" when using rootless podman
-PACK_DOCKER_HOST := ""
-
 # CONTAINER_ENGINE for running containers
-# Set to "podman" when using rootless podman
-CONTAINER_ENGINE := "docker"
+# Defaults to "podman", set to "docker" to use docker
+CONTAINER_ENGINE := "podman"
+
+# DOCKER_HOST for pack
+# Automatically set to "inherit" when using podman
+ifeq ($(CONTAINER_ENGINE),podman)
+PACK_DOCKER_HOST := "inherit"
+else
+PACK_DOCKER_HOST := ""
+endif
+
+# Image repository options
+# IMAGE_REPO: registry to push container images to
+IMAGE_REPO := ghcr.io/adambkaplan/quizap
+# IMAGE_TAG: tag to use for container images
+IMAGE_TAG := "latest"
+# IMAGE_PUSH: push container images to the registry during the build
+IMAGE_PUSH := "false"
 
 ##@ Development Commands
 
@@ -62,11 +74,22 @@ backend-build: ## Build the backend binary
 	cd $(BACKEND_DIR) && go build -o $(BACKEND_BINARY) main.go
 	@echo "$(GREEN)Backend built successfully: $(BACKEND_DIR)/$(BACKEND_BINARY)$(NC)"
 
+.PHONY: backend-build-container
+backend-build-container: ## Build the backend container with ko
+	@echo "$(GREEN)Building backend container with ko...$(NC)"
+	cd backend && KO_DOCKER_REPO="$(IMAGE_REPO)" ko build . --base-import-paths --push=$(IMAGE_PUSH)
+
 .PHONY: backend-run
 backend-run: ## Run the backend server
 	@echo "$(GREEN)Starting backend server on port $(BACKEND_PORT)...$(NC)"
 	@echo "$(YELLOW)Press Ctrl+C to stop$(NC)"
 	cd $(BACKEND_DIR) && go run main.go
+
+.PHONY: backend-run-container
+backend-run-container: ## Run the backend container
+	@echo "$(GREEN)Starting backend server on port $(BACKEND_PORT)...$(NC)"
+	@echo "$(YELLOW)Press Ctrl+C to stop$(NC)"
+	$(CONTAINER_ENGINE) run -d -p $(BACKEND_PORT):8080 --name quizap-backend "$(IMAGE_REPO)/backend:$(IMAGE_TAG)"
 
 .PHONY: backend-test
 backend-test: ## Run backend tests
@@ -104,12 +127,12 @@ frontend-build: ## Build the frontend for production
 .PHONY: frontend-build-container
 frontend-build-container: ## Build the frontend container with pack
 	@echo "$(GREEN)Building frontend container with pack...$(NC)"
-	pack build ghcr.io/adambkaplan/quizap/frontend:latest --path $(FRONTEND_DIR) --builder docker.io/paketobuildpacks/builder-jammy-base:latest --docker-host "$(PACK_DOCKER_HOST)"
+	pack build "$(IMAGE_REPO)/frontend:$(IMAGE_TAG)" --path $(FRONTEND_DIR) --builder docker.io/paketobuildpacks/builder-jammy-base:latest --docker-host "$(PACK_DOCKER_HOST)"
 
 .PHONY: frontend-run-container
 frontend-run-container: ## Run the frontend in a container
 	@echo "$(GREEN)Running frontend container...$(NC)"
-	$(CONTAINER_ENGINE) run -d -p $(FRONTEND_PORT):8080 --name quizap-frontend ghcr.io/adambkaplan/quizap/frontend:latest
+	$(CONTAINER_ENGINE) run -d -p $(FRONTEND_PORT):8080 --name quizap-frontend "$(IMAGE_REPO)/frontend:$(IMAGE_TAG)"
 
 .PHONY: frontend-test
 frontend-test: ## Run frontend tests
@@ -165,6 +188,12 @@ lint: frontend-lint ## Run all linting
 .PHONY: build
 build: backend-build frontend-build ## Build both frontend and backend
 
+.PHONY: build-containers
+build-containers: backend-build-container frontend-build-container ## Build both frontend and backend containers
+
+.PHONY: run-containers
+run-containers: backend-run-container frontend-run-container ## Run both frontend and backend containers
+
 .PHONY: clean
 clean: backend-clean frontend-clean ## Clean all build artifacts
 
@@ -205,8 +234,17 @@ stop-frontend-container: ## Stop frontend container
 	$(CONTAINER_ENGINE) stop quizap-frontend || echo "$(YELLOW)No frontend container found$(NC)"
 	$(CONTAINER_ENGINE) rm quizap-frontend || echo "$(YELLOW)No frontend container found$(NC)"
 
+.PHONY: stop-backend-container
+stop-backend-container: ## Stop backend container
+	@echo "$(GREEN)Stopping backend container...$(NC)"
+	$(CONTAINER_ENGINE) stop quizap-backend || echo "$(YELLOW)No backend container found$(NC)"
+	$(CONTAINER_ENGINE) rm quizap-backend || echo "$(YELLOW)No backend container found$(NC)"
+
 .PHONY: stop-all
 stop-all: stop-backend stop-frontend ## Stop all services
+
+.PHONY: stop-containers
+stop-containers: stop-backend-container stop-frontend-container ## Stop both frontend and backend containers
 
 .PHONY: restart-backend
 restart-backend: stop-backend backend-run ## Restart backend server
