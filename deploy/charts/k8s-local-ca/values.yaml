@@ -1,0 +1,25 @@
+# Default values for k8s-local-ca.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# CA Certificate configuration
+ca:
+  name: k8s-local-ca
+  commonName: ca.k8s.local
+  secretName: k8s-local-ca
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+
+# Root Issuer configuration
+rootIssuer:
+  name: k8s-local-root
+
+# CA Issuer configuration
+caIssuer:
+  name: k8s-local-ca
+
+# Global labels and annotations to apply to all resources
+global:
+  labels: {}
+  annotations: {}

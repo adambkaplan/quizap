@@ -1,0 +1,30 @@
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: Gateway
+metadata:
+  name: {{ .Values.gateway.name }}
+  labels:
+    {{- include "quizap.labels" . | nindent 4 }}
+    app.kubernetes.io/component: gateway
+  {{- with (include "quizap.annotations" .) }}
+  annotations:
+    {{- . | nindent 4 }}
+  {{- end }}
+spec:
+  gatewayClassName: {{ .Values.gateway.className }}
+  listeners:
+  {{- if .Values.gateway.http.enabled }}
+    - name: http
+      port: {{ .Values.gateway.http.port }}
+      protocol: HTTP
+      hostname: {{ .Values.gateway.domain }}
+  {{- end }}
+  {{- if .Values.gateway.https.enabled }}
+    - name: https
+      port: {{ .Values.gateway.https.port }}
+      protocol: HTTPS
+      hostname: {{ .Values.gateway.domain }}
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: {{ .Values.gateway.https.tls.secretName }}
+{{- end }}
