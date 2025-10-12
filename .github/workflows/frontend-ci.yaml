@@ -46,6 +46,9 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -57,5 +60,7 @@ jobs:
         uses: buildpacks/github-actions/setup-pack@v5.9.4
       - name: Install dependencies
         run: make frontend-install
+      - name: Log in to registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
       - name: Build container with pack
-        run: make frontend-build-container
+        run: make frontend-build-container IMAGE_PUSH=${{ github.event_name == 'push' }}
