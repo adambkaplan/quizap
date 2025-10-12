@@ -298,6 +298,17 @@ kind-deploy: ## Deploy KIND cluster using deploy/kind/config.yaml ##kind
 		--create-namespace
 	@echo "$(YELLOW)Waiting for CA certificate to be ready...$(NC)"
 	kubectl wait --for=condition=Ready --timeout=300s certificate/k8s-local-ca -n cert-manager
+	@echo "$(YELLOW)Deploying k8s.local gateway...$(NC)"
+	kubectl create ns k8s-local
+	kubectl apply -f deploy/k8s-local-gateway/gateway.yaml
+	@echo "$(YELLOW)Waiting for gateway to be ready...$(NC)"
+	kubectl wait --for=condition=Programmed --timeout=300s gateway/k8s-local-gateway -n k8s-local
+	@echo "$(YELLOW)Deploying Harbor...$(NC)"
+	helm install \
+		harbor deploy/harbor \
+		--namespace harbor \
+		--create-namespace \
+		--values deploy/harbor/helm-values.yaml
 	@echo "$(YELLOW)Deploying Quizap application...$(NC)"
 	helm install \
 		quizap deploy/charts/quizap \

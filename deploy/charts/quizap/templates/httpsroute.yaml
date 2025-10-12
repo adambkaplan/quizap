@@ -1,8 +1,8 @@
-{{- if .Values.gateway.https.enabled }}
-apiVersion: gateway.networking.k8s.io/v1beta1
+{{- if .Values.route.https.enabled }}
+apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: {{ .Values.gateway.name }}-route-https
+  name: {{ include "quizap.fullname" . }}-route-https
   labels:
     {{- include "quizap.labels" . | nindent 4 }}
     app.kubernetes.io/component: gateway
@@ -11,12 +11,18 @@ metadata:
     {{- . | nindent 4 }}
   {{- end }}
 spec:
+  {{- if .Values.route.https.parentRef }}
   parentRefs:
-  - name: {{ .Values.gateway.name }}
-    kind: Gateway
-    sectionName: https
+  - name: {{ .Values.route.https.parentRef.name }}
+    {{- if .Values.route.https.parentRef.namespace }}
+    namespace: {{ .Values.route.https.parentRef.namespace }}
+    {{- end }}
+    {{- if .Values.route.https.parentRef.sectionName }}
+    sectionName: {{ .Values.route.https.parentRef.sectionName }}
+    {{- end }}
+  {{- end }}
   hostnames:
-  - {{ .Values.gateway.domain }}
+  - {{ .Values.route.domain }}
   rules:
   - matches:
     - path:

@@ -5,31 +5,37 @@ This Helm chart has deployed the Quizap application with the following component
 
 - Frontend Deployment ({{ .Values.frontend.name }}): React application serving the UI
 - Backend Deployment ({{ .Values.backend.name }}): Go backend API server
-- Gateway ({{ .Values.gateway.name }}): Gateway for API access with domain {{ .Values.gateway.domain }}
-{{- if .Values.gateway.http.enabled }}
-- HTTP Route: Routes HTTP traffic at port {{ .Values.gateway.http.port }} based on path:
+{{- if .Values.route.http.enabled }}
+- HTTP Route: Routes HTTP traffic based on path:
    - /api/* → Backend service
    - /* → Frontend service
+{{- if .Values.route.http.parentRef }}
+   - Parent Gateway: {{ .Values.route.http.parentRef.name }}{{- if .Values.route.http.parentRef.namespace }} ({{ .Values.route.http.parentRef.namespace }}){{- end }}
 {{- end }}
-{{- if .Values.gateway.https.enabled }}
-- HTTPS Route: Routes HTTPS traffic at port {{ .Values.gateway.https.port }} with TLS certificate from {{ .Values.gateway.https.tls.issuer.kind }} "{{ .Values.gateway.https.tls.issuer.name }}"
+{{- end }}
+{{- if .Values.route.https.enabled }}
+- HTTPS Route: Routes HTTPS traffic based on path:
+   - /api/* → Backend service
+   - /* → Frontend service
+{{- if .Values.route.https.parentRef }}
+   - Parent Gateway: {{ .Values.route.https.parentRef.name }}{{- if .Values.route.https.parentRef.namespace }} ({{ .Values.route.https.parentRef.namespace }}){{- end }}
+{{- end }}
 {{- end }}
 
 The application is accessible at:
-{{- if .Values.gateway.https.enabled }}
-- HTTPS: https://{{ .Values.gateway.domain }}
+{{- if .Values.route.https.enabled }}
+- HTTPS: https://{{ .Values.route.domain }}
 {{- end }}
-{{- if .Values.gateway.http.enabled }}
-- HTTP: http://{{ .Values.gateway.domain }}
+{{- if .Values.route.http.enabled }}
+- HTTP: http://{{ .Values.route.domain }}
 {{- end }}
 
 Prerequisites:
+{{- if or .Values.route.http.parentRef .Values.route.https.parentRef }}
 - Gateway API must be installed in your cluster
-- NGINX Gateway Fabric or compatible Gateway implementation
-- DNS resolution for {{ .Values.gateway.domain }} pointing to your cluster
-{{- if .Values.gateway.https.enabled }}
-- cert-manager installed with {{ .Values.gateway.https.tls.issuer.kind }} "{{ .Values.gateway.https.tls.issuer.name }}"
+- Parent Gateway must be deployed and ready
 {{- end }}
+- DNS resolution for {{ .Values.route.domain }} pointing to your cluster
 
 Verification:
   # Check deployments
@@ -37,35 +43,34 @@ Verification:
 
   # Check services
   kubectl get services -l app.kubernetes.io/name={{ include "quizap.name" . }}
-
-  # Check gateway
-  kubectl get gateway {{ .Values.gateway.name }}
-{{- if .Values.gateway.http.enabled }}
+{{- if .Values.route.http.enabled }}
 
   # Check HTTP route
-  kubectl get httproute {{ .Values.gateway.name }}-http-route
+  kubectl get httproute {{ include "quizap.fullname" . }}-route-http
 {{- end }}
-{{- if .Values.gateway.https.enabled }}
+{{- if .Values.route.https.enabled }}
 
   # Check HTTPS route
-  kubectl get httproute {{ .Values.gateway.name }}-https-route
-
-  # Check TLS certificate
-  kubectl get certificate {{ .Values.gateway.https.tls.secretName }}
+  kubectl get httproute {{ include "quizap.fullname" . }}-route-https
 {{- end }}
+{{- if .Values.route.http.parentRef }}
 
-  # Check gateway status
-  kubectl describe gateway {{ .Values.gateway.name }}
+  # Check parent Gateway for HTTP
+  kubectl get gateway {{ .Values.route.http.parentRef.name }}{{- if .Values.route.http.parentRef.namespace }} -n {{ .Values.route.http.parentRef.namespace }}{{- end }}
+{{- end }}
+{{- if .Values.route.https.parentRef }}
+
+  # Check parent Gateway for HTTPS
+  kubectl get gateway {{ .Values.route.https.parentRef.name }}{{- if .Values.route.https.parentRef.namespace }} -n {{ .Values.route.https.parentRef.namespace }}{{- end }}
+{{- end }}
 
 Configuration:
 - Frontend image: {{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}
 - Backend image: {{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}
-- Gateway class: {{ .Values.gateway.className }}
-- Domain: {{ .Values.gateway.domain }}
-{{- if .Values.gateway.http.enabled }}
-- HTTP enabled: Port {{ .Values.gateway.http.port }}
+- Domain: {{ .Values.route.domain }}
+{{- if .Values.route.http.enabled }}
+- HTTP enabled: Port {{ .Values.route.http.port }}
 {{- end }}
-{{- if .Values.gateway.https.enabled }}
-- HTTPS enabled: Port {{ .Values.gateway.https.port }}
-- TLS issuer: {{ .Values.gateway.https.tls.issuer.kind }} "{{ .Values.gateway.https.tls.issuer.name }}"
+{{- if .Values.route.https.enabled }}
+- HTTPS enabled: Port {{ .Values.route.https.port }}
 {{- end }}

@@ -42,22 +42,28 @@ backend:
     type: ClusterIP
     port: 8080
 
-# Gateway configuration
-gateway:
-  name: quizap-gateway
-  className: nginx
+# Route configuration
+route:
+  # Domain for the application
   domain: quizap.k8s.local
+  # HTTP route configuration
   http:
     enabled: true
     port: 80
+    # Parent Gateway reference (optional)
+    parentRef:
+      name: k8s-local-gateway
+      namespace: k8s-local
+      sectionName: http-wildcard-k8s-local
+  # HTTPS route configuration
   https:
     enabled: true
     port: 443
-    tls:
-      secretName: quizap-tls
-      issuer:
-        name: k8s-local-ca
-        kind: ClusterIssuer
+    # Parent Gateway reference (optional)
+    parentRef:
+      name: k8s-local-gateway
+      namespace: k8s-local
+      sectionName: https-wildcard-k8s-local
 
 # Global labels and annotations to apply to all resources
 global:
