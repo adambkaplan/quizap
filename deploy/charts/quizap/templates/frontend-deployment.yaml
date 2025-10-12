@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.frontend.name }}
+  labels:
+    {{- include "quizap.frontend.labels" . | nindent 4 }}
+  {{- with (include "quizap.annotations" .) }}
+  annotations:
+    {{- . | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.frontend.replicas }}
+  selector:
+    matchLabels:
+      {{- include "quizap.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: frontend
+  template:
+    metadata:
+      labels:
+        {{- include "quizap.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: frontend
+      {{- with (include "quizap.annotations" .) }}
+      annotations:
+        {{- . | nindent 8 }}
+      {{- end }}
+    spec:
+      containers:
+      - name: frontend
+        image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
+        imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.frontend.port }}
+          protocol: TCP
+        resources:
+          {{- toYaml .Values.frontend.resources | nindent 10 }}
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 5

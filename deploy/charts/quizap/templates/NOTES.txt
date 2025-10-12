@@ -1,0 +1,71 @@
+===============================================
+Quizap Application Deployed Successfully!
+
+This Helm chart has deployed the Quizap application with the following components:
+
+- Frontend Deployment ({{ .Values.frontend.name }}): React application serving the UI
+- Backend Deployment ({{ .Values.backend.name }}): Go backend API server
+- Gateway ({{ .Values.gateway.name }}): Gateway for API access with domain {{ .Values.gateway.domain }}
+{{- if .Values.gateway.http.enabled }}
+- HTTP Route: Routes HTTP traffic at port {{ .Values.gateway.http.port }} based on path:
+   - /api/* → Backend service
+   - /* → Frontend service
+{{- end }}
+{{- if .Values.gateway.https.enabled }}
+- HTTPS Route: Routes HTTPS traffic at port {{ .Values.gateway.https.port }} with TLS certificate from {{ .Values.gateway.https.tls.issuer.kind }} "{{ .Values.gateway.https.tls.issuer.name }}"
+{{- end }}
+
+The application is accessible at:
+{{- if .Values.gateway.https.enabled }}
+- HTTPS: https://{{ .Values.gateway.domain }}
+{{- end }}
+{{- if .Values.gateway.http.enabled }}
+- HTTP: http://{{ .Values.gateway.domain }}
+{{- end }}
+
+Prerequisites:
+- Gateway API must be installed in your cluster
+- NGINX Gateway Fabric or compatible Gateway implementation
+- DNS resolution for {{ .Values.gateway.domain }} pointing to your cluster
+{{- if .Values.gateway.https.enabled }}
+- cert-manager installed with {{ .Values.gateway.https.tls.issuer.kind }} "{{ .Values.gateway.https.tls.issuer.name }}"
+{{- end }}
+
+Verification:
+  # Check deployments
+  kubectl get deployments -l app.kubernetes.io/name={{ include "quizap.name" . }}
+
+  # Check services
+  kubectl get services -l app.kubernetes.io/name={{ include "quizap.name" . }}
+
+  # Check gateway
+  kubectl get gateway {{ .Values.gateway.name }}
+{{- if .Values.gateway.http.enabled }}
+
+  # Check HTTP route
+  kubectl get httproute {{ .Values.gateway.name }}-http-route
+{{- end }}
+{{- if .Values.gateway.https.enabled }}
+
+  # Check HTTPS route
+  kubectl get httproute {{ .Values.gateway.name }}-https-route
+
+  # Check TLS certificate
+  kubectl get certificate {{ .Values.gateway.https.tls.secretName }}
+{{- end }}
+
+  # Check gateway status
+  kubectl describe gateway {{ .Values.gateway.name }}
+
+Configuration:
+- Frontend image: {{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}
+- Backend image: {{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}
+- Gateway class: {{ .Values.gateway.className }}
+- Domain: {{ .Values.gateway.domain }}
+{{- if .Values.gateway.http.enabled }}
+- HTTP enabled: Port {{ .Values.gateway.http.port }}
+{{- end }}
+{{- if .Values.gateway.https.enabled }}
+- HTTPS enabled: Port {{ .Values.gateway.https.port }}
+- TLS issuer: {{ .Values.gateway.https.tls.issuer.kind }} "{{ .Values.gateway.https.tls.issuer.name }}"
+{{- end }}

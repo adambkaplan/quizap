@@ -57,6 +57,9 @@ help: ## Display this help message
 	@echo "$(YELLOW)Development Workflow:$(NC)"
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z_-]+:.*##.*dev/ {printf "  $(GREEN)%-20s$(NC) %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 	@echo ""
+	@echo "$(YELLOW)KIND Commands:$(NC)"
+	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z_-]+:.*##.*kind/ {printf "  $(GREEN)%-20s$(NC) %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+	@echo ""
 	@echo "$(YELLOW)Utility Commands:$(NC)"
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z_-]+:.*##.*utility/ {printf "  $(GREEN)%-20s$(NC) %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
@@ -259,6 +262,59 @@ setup: install ## Complete setup for new contributors
 	@echo "1. Start backend:  $(GREEN)make backend-run$(NC)"
 	@echo "2. Start frontend: $(GREEN)make frontend-run$(NC)"
 	@echo "3. Open browser:   $(GREEN)http://localhost:$(FRONTEND_PORT)$(NC)"
+
+##@ KIND Commands
+
+.PHONY: kind-deploy
+kind-deploy: ## Deploy KIND cluster using deploy/kind/config.yaml ##kind
+	@echo "$(GREEN)Deploying KIND cluster...$(NC)"
+	@if kind get clusters | grep -q "^kind$$"; then \
+		echo "$(YELLOW)KIND cluster 'kind' already exists. Use 'make kind-cleanup' to remove it first.$(NC)"; \
+		exit 1; \
+	fi
+	kind create cluster --config deploy/kind/config.yaml --name kind
+	@echo "$(YELLOW)Applying Gateway APIs...$(NC)"
+	kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/standard-install.yaml
+	@echo "$(YELLOW) Installing cert-manager...$(NC)"
+	helm install \
+  		cert-manager oci://quay.io/jetstack/charts/cert-manager \
+  		--version v1.19.0 \
+  		--namespace cert-manager \
+  		--create-namespace \
+  		--values deploy/cert-manager/helm-values.yaml
+	helm install \
+	  ngninx-gateway-fabric oci://ghcr.io/nginx/charts/nginx-gateway-fabric \
+	  --namespace nginx-gateway \
+	  --create-namespace \
+	  --values deploy/nginx-gateway-fabric/helm-values.yaml
+	@echo "$(YELLOW)Deploying k8s.local certificate authority...$(NC)"
+	helm install \
+		k8s-local-ca deploy/charts/k8s-local-ca \
+		--namespace cert-manager \
+		--create-namespace
+	@echo "$(YELLOW)Waiting for CA certificate to be ready...$(NC)"
+	kubectl wait --for=condition=Ready --timeout=300s certificate/k8s-local-ca -n cert-manager
+	@echo "$(YELLOW)Deploying Quizap application...$(NC)"
+	helm install \
+		quizap deploy/charts/quizap \
+		--namespace quizap \
+		--create-namespace
+	@echo "$(GREEN)KIND cluster 'kind' with Quizap application deployed successfully!$(NC)"
+
+.PHONY: kind-cleanup
+kind-cleanup: ## Remove KIND cluster ##kind
+	@echo "$(GREEN)Removing KIND cluster...$(NC)"
+	@if ! kind get clusters | grep -q "^kind$$"; then \
+		echo "$(YELLOW)KIND cluster 'kind' does not exist.$(NC)"; \
+		exit 0; \
+	fi
+	kind delete cluster --name kind
+	@echo "$(GREEN)KIND cluster 'kind' removed successfully!$(NC)"
+
+.PHONY: kind-kubeconfig
+kind-kubeconfig: ## Show KIND kubeconfig export command ##kind
+	@echo "$(GREEN)To use KIND cluster with kubectl:$(NC)"
+	@echo "$(YELLOW)kubectl cluster-info --context kind-kind$(NC)"
 
 ##@ CI/CD Commands
 
