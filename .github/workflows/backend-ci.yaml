@@ -30,6 +30,8 @@ jobs:
           go-version: '1.24'
       - name: Setup ko
         uses: ko-build/setup-ko@v0.9
+      - name: Log in to registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
       - name: Download dependencies
         run: make backend-install
       - name: Build
