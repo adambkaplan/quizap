@@ -130,7 +130,11 @@ frontend-build: ## Build the frontend for production
 .PHONY: frontend-build-container
 frontend-build-container: ## Build the frontend container with pack
 	@echo "$(GREEN)Building frontend container with pack...$(NC)"
-	pack build "$(IMAGE_REPO)/frontend:$(IMAGE_TAG)" --path $(FRONTEND_DIR) --builder docker.io/paketobuildpacks/builder-jammy-base:latest --docker-host $(PACK_DOCKER_HOST)
+	pack build "$(IMAGE_REPO)/frontend:$(IMAGE_TAG)" \
+	  --path $(FRONTEND_DIR) \
+	  --builder docker.io/paketobuildpacks/builder-jammy-base:latest \
+	  --docker-host $(PACK_DOCKER_HOST) \
+	  --publish=$(IMAGE_PUSH)
 
 .PHONY: frontend-run-container
 frontend-run-container: ## Run the frontend in a container
