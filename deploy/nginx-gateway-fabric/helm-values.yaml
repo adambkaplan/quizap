@@ -6,3 +6,5 @@ nginx:
         listenerPort: 80
       - port: 31438
         listenerPort: 443
+    nodeSelector:
+      node-role.kubernetes.io/worker: ""
