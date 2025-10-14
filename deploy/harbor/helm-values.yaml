@@ -14,4 +14,9 @@ expose:
     hosts:
       - registry.k8s.local
 
-externalUrl: https://registry.k8s.local
+externalURL: https://registry.k8s.local
+
+persistence:
+  enabled: true
+  imageChartStorage:
+    disableRedirect: true

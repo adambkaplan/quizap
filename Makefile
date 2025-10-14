@@ -304,11 +304,13 @@ kind-deploy: ## Deploy KIND cluster using deploy/kind/config.yaml ##kind
 	@echo "$(YELLOW)Waiting for gateway to be ready...$(NC)"
 	kubectl wait --for=condition=Programmed --timeout=300s gateway/k8s-local-gateway -n k8s-local
 	@echo "$(YELLOW)Deploying Harbor...$(NC)"
+	helm repo add harbor https://helm.goharbor.io
 	helm install \
-		harbor deploy/harbor \
+		harbor harbor/harbor \
 		--namespace harbor \
 		--create-namespace \
 		--values deploy/harbor/helm-values.yaml
+	kubectl apply -f deploy/harbor/gateway-client-settings.yaml -n harbor
 	@echo "$(YELLOW)Deploying Quizap application...$(NC)"
 	helm install \
 		quizap deploy/charts/quizap \
