@@ -1,0 +1,24 @@
+apiVersion: shipwright.io/v1beta1
+kind: Build
+metadata:
+  name: quizap-backend
+  namespace: quizap-dev
+spec:
+  # Source configuration - points to the backend directory
+  source:
+    type: Git
+    git:
+      url: https://github.com/adambkaplan/quizap.git
+      revision: main
+    contextDir: backend
+  
+  # Build strategy using buildpacks
+  strategy:
+    name: ko
+    kind: ClusterBuildStrategy
+  
+  # Output image configuration
+  output:
+    image: harbor-core.harbor.svc.cluster.local/quizap/backend:latest
+    insecure: true
+    pushSecret: harbor

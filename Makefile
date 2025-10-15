@@ -269,8 +269,8 @@ setup: install ## Complete setup for new contributors
 
 ##@ KIND Commands
 
-.PHONY: kind-deploy
-kind-deploy: ## Deploy KIND cluster using deploy/kind/config.yaml ##kind
+.PHONY: kind-setup
+kind-setup: ## Deploy KIND cluster using deploy/kind/config.yaml ##kind
 	@echo "$(GREEN)Deploying KIND cluster...$(NC)"
 	@if kind get clusters | grep -q "^kind$$"; then \
 		echo "$(YELLOW)KIND cluster 'kind' already exists. Use 'make kind-cleanup' to remove it first.$(NC)"; \
@@ -279,6 +279,11 @@ kind-deploy: ## Deploy KIND cluster using deploy/kind/config.yaml ##kind
 	kind create cluster --config deploy/kind/config.yaml --name kind
 	@echo "$(YELLOW)Applying Gateway APIs...$(NC)"
 	kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/standard-install.yaml
+	@echo "$(YELLOW)Waiting for Gateway API CRDs to be established...$(NC)"
+	kubectl wait --for=condition=Established --timeout=300s crd/gatewayclasses.gateway.networking.k8s.io
+	kubectl wait --for=condition=Established --timeout=300s crd/gateways.gateway.networking.k8s.io
+	kubectl wait --for=condition=Established --timeout=300s crd/httproutes.gateway.networking.k8s.io
+	@echo "$(GREEN)Gateway API CRDs are ready!$(NC)"
 	@echo "$(YELLOW) Installing cert-manager...$(NC)"
 	helm install \
   		cert-manager oci://quay.io/jetstack/charts/cert-manager \
@@ -303,7 +308,10 @@ kind-deploy: ## Deploy KIND cluster using deploy/kind/config.yaml ##kind
 	kubectl apply -f deploy/k8s-local-gateway/gateway.yaml
 	@echo "$(YELLOW)Waiting for gateway to be ready...$(NC)"
 	kubectl wait --for=condition=Programmed --timeout=300s gateway/k8s-local-gateway -n k8s-local
-	@echo "$(YELLOW)Deploying Harbor...$(NC)"
+
+.PHONY: kind-deploy-harbor
+kind-deploy-harbor: ## Deploy Harbor to KIND cluster ##kind
+	@echo "$(GREEN)Deploying Harbor to KIND cluster...$(NC)"
 	helm repo add harbor https://helm.goharbor.io
 	helm install \
 		harbor harbor/harbor \
@@ -311,12 +319,25 @@ kind-deploy: ## Deploy KIND cluster using deploy/kind/config.yaml ##kind
 		--create-namespace \
 		--values deploy/harbor/helm-values.yaml
 	kubectl apply -f deploy/harbor/gateway-client-settings.yaml -n harbor
-	@echo "$(YELLOW)Deploying Quizap application...$(NC)"
+	@echo "$(GREEN)Harbor deployed successfully!$(NC)"
+
+.PHONY: kind-deploy-quizap
+kind-deploy-quizap: ## Deploy Quizap to KIND cluster ##kind
+	@echo "$(GREEN)Deploying Quizap to KIND cluster...$(NC)"
 	helm install \
 		quizap deploy/charts/quizap \
 		--namespace quizap \
 		--create-namespace
-	@echo "$(GREEN)KIND cluster 'kind' with Quizap application deployed successfully!$(NC)"
+	@echo "$(GREEN)Quizap deployed successfully!$(NC)"
+
+.PHONY: kind-deploy-shipwright
+kind-deploy-shipwright: ## Deploy Shipwright to KIND cluster ##kind
+	@echo "$(GREEN)Deploying Shipwright and Tekton to KIND cluster...$(NC)"
+	kubectl apply -k deploy/tekton
+	kubectl apply -k deploy/shipwright --server-side
+	kubectl wait --for=condition=Established --timeout=300s crd/clusterbuildstrategies.shipwright.io
+	kubectl apply -k deploy/shipwright-strategies
+	@echo "$(GREEN)Shipwright deployed successfully!$(NC)"
 
 .PHONY: kind-cleanup
 kind-cleanup: ## Remove KIND cluster ##kind

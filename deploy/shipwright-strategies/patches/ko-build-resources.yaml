@@ -1,0 +1,14 @@
+kind: ClusterBuildStrategy
+apiVersion: shipwright.io/v1beta1
+metadata:
+  name: ko
+spec:
+  steps:
+    - name: build
+      resources:
+        requests:
+          cpu: 1
+          memory: 256Mi
+        limits:
+          cpu: 1
+          memory: 2Gi
