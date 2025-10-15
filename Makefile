@@ -336,7 +336,7 @@ kind-deploy-shipwright: ## Deploy Shipwright to KIND cluster ##kind
 	kubectl apply -k deploy/tekton
 	kubectl apply -k deploy/shipwright --server-side
 	kubectl wait --for=condition=Established --timeout=300s crd/clusterbuildstrategies.shipwright.io
-	kubectl apply -f deploy/shipwright/build/sample-strategies.yaml
+	kubectl apply -k deploy/shipwright-strategies
 	@echo "$(GREEN)Shipwright deployed successfully!$(NC)"
 
 .PHONY: kind-cleanup
