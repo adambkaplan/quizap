@@ -9,10 +9,10 @@ spec:
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: shipwright-webhook-cert
+  name: shipwright-build-webhook-cert
   namespace: system
 spec:
-  secretName: shipwright-webhook-cert
+  secretName: shipwright-build-webhook-cert
   issuerRef:
     name: shipwright-build
     kind: Issuer
