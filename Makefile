@@ -277,37 +277,16 @@ kind-setup: ## Deploy KIND cluster using deploy/kind/config.yaml ##kind
 		exit 1; \
 	fi
 	kind create cluster --config deploy/kind/config.yaml --name kind
-	@echo "$(YELLOW)Applying Gateway APIs...$(NC)"
-	kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/standard-install.yaml
-	@echo "$(YELLOW)Waiting for Gateway API CRDs to be established...$(NC)"
-	kubectl wait --for=condition=Established --timeout=300s crd/gatewayclasses.gateway.networking.k8s.io
-	kubectl wait --for=condition=Established --timeout=300s crd/gateways.gateway.networking.k8s.io
-	kubectl wait --for=condition=Established --timeout=300s crd/httproutes.gateway.networking.k8s.io
-	@echo "$(GREEN)Gateway API CRDs are ready!$(NC)"
-	@echo "$(YELLOW) Installing cert-manager...$(NC)"
-	helm install \
-  		cert-manager oci://quay.io/jetstack/charts/cert-manager \
-  		--version v1.19.0 \
-  		--namespace cert-manager \
-  		--create-namespace \
-  		--values deploy/cert-manager/helm-values.yaml
-	helm install \
-	  ngninx-gateway-fabric oci://ghcr.io/nginx/charts/nginx-gateway-fabric \
-	  --namespace nginx-gateway \
-	  --create-namespace \
-	  --values deploy/nginx-gateway-fabric/helm-values.yaml
-	@echo "$(YELLOW)Deploying k8s.local certificate authority...$(NC)"
-	helm install \
-		k8s-local-ca deploy/charts/k8s-local-ca \
-		--namespace cert-manager \
-		--create-namespace
-	@echo "$(YELLOW)Waiting for CA certificate to be ready...$(NC)"
-	kubectl wait --for=condition=Ready --timeout=300s certificate/k8s-local-ca -n cert-manager
-	@echo "$(YELLOW)Deploying k8s.local gateway...$(NC)"
-	kubectl create ns k8s-local
-	kubectl apply -f deploy/k8s-local-gateway/gateway.yaml
-	@echo "$(YELLOW)Waiting for gateway to be ready...$(NC)"
-	kubectl wait --for=condition=Programmed --timeout=300s gateway/k8s-local-gateway -n k8s-local
+	@echo "$(YELLOW)Deploying ArgoCD to bootstrap KIND cluster...$(NC)"
+	helm install argo-cd oci://ghcr.io/argoproj/argo-helm/argo-cd \
+		--version 8.6.3 \
+		--namespace argo-cd \
+		--create-namespace \
+		--values deploy/argo-cd/helm-bootstrap.yaml
+	kubectl apply -f argo-cd/bootstrap.yaml -n argo-cd
+	kubectl wait --for=jsonpath='{.status.sync.status}'=Synced application/bootstrap -n argo-cd --timeout=300s
+	kubectl wait --for=jsonpath='{.status.health.status}'=Healthy application/bootstrap -n argo-cd --timeout=300s
+	@echo "$(GREEN)ArgoCD bootstrap deployed successfully!$(NC)"
 
 .PHONY: kind-deploy-harbor
 kind-deploy-harbor: ## Deploy Harbor to KIND cluster ##kind

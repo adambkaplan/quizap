@@ -1,0 +1,14 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: quizap
+  namespace: argo-cd
+spec:
+  destination:
+    namespace: quizap
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: deploy/charts/quizap
+    repoURL: https://github.com/adambkaplan/quizap.git
+    targetRevision: HEAD
