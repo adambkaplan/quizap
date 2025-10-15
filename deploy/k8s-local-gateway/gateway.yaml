@@ -1,0 +1,54 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: k8s-local-gateway
+  namespace: k8s-local
+  annotations:
+    cert-manager.io/cluster-issuer: k8s-local-ca
+  labels:
+    app.kubernetes.io/name: k8s-local-gateway
+    app.kubernetes.io/component: gateway
+    app.kubernetes.io/part-of: k8s-local
+spec:
+  gatewayClassName: nginx
+  listeners:
+  # HTTP listener for k8s.local
+  - name: http-k8s-local
+    port: 80
+    protocol: HTTP
+    hostname: k8s.local
+    allowedRoutes:
+      namespaces:
+        from: All
+  # HTTP listener for *.k8s.local
+  - name: http-wildcard-k8s-local
+    port: 80
+    protocol: HTTP
+    hostname: "*.k8s.local"
+    allowedRoutes:
+      namespaces:
+        from: All
+  # HTTPS listener for k8s.local
+  - name: https-k8s-local
+    port: 443
+    protocol: HTTPS
+    hostname: k8s.local
+    tls:
+      mode: Terminate
+      certificateRefs:
+        - name: k8s-local-tls
+    allowedRoutes:
+      namespaces:
+        from: All
+  # HTTPS listener for *.k8s.local
+  - name: https-wildcard-k8s-local
+    port: 443
+    protocol: HTTPS
+    hostname: "*.k8s.local"
+    tls:
+      mode: Terminate
+      certificateRefs:
+        - name: k8s-local-tls
+    allowedRoutes:
+      namespaces:
+        from: All
