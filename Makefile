@@ -58,7 +58,7 @@ help: ## Display this help message
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z_-]+:.*##.*dev/ {printf "  $(GREEN)%-20s$(NC) %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 	@echo ""
 	@echo "$(YELLOW)KIND Commands:$(NC)"
-	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z_-]+:.*##.*kind/ {printf "  $(GREEN)%-20s$(NC) %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*##"} /^kind-[a-zA-Z_-]+:.*##/ {printf "  $(GREEN)%-20s$(NC) %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 	@echo ""
 	@echo "$(YELLOW)Utility Commands:$(NC)"
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z_-]+:.*##.*utility/ {printf "  $(GREEN)%-20s$(NC) %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -270,7 +270,7 @@ setup: install ## Complete setup for new contributors
 ##@ KIND Commands
 
 .PHONY: kind-setup
-kind-setup: ## Deploy KIND cluster using deploy/kind/config.yaml ##kind
+kind-setup: ## Deploy cluster with ArgoCD App of Apps
 	@echo "$(GREEN)Deploying KIND cluster...$(NC)"
 	@if kind get clusters | grep -q "^kind$$"; then \
 		echo "$(YELLOW)KIND cluster 'kind' already exists. Use 'make kind-cleanup' to remove it first.$(NC)"; \
@@ -288,8 +288,8 @@ kind-setup: ## Deploy KIND cluster using deploy/kind/config.yaml ##kind
 	kubectl wait --for=jsonpath='{.status.health.status}'=Healthy application/bootstrap -n argo-cd --timeout=300s
 	@echo "$(GREEN)ArgoCD bootstrap deployed successfully!$(NC)"
 
-.PHONY: kind-deploy-harbor
-kind-deploy-cloudnative-build: ## Deploy Harbor to KIND cluster ##kind
+.PHONY: kind-deploy-cloudnative-build
+kind-deploy-cloudnative-build: ## Deploy Cloud Native Build Stack to KIND cluster
 	@echo "$(GREEN)Deploying Cloud Native Build Stack to KIND cluster...$(NC)"
 	kubectl apply -f argo-cd/cloudnative-build.yaml -n argo-cd
 	kubectl wait --for=jsonpath='{.status.sync.status}'=Synced application/cloudnative-build -n argo-cd --timeout=300s
@@ -297,17 +297,15 @@ kind-deploy-cloudnative-build: ## Deploy Harbor to KIND cluster ##kind
 	@echo "$(GREEN)Cloud Native Build stack deployed successfully!$(NC)"
 
 .PHONY: kind-deploy-quizap
-kind-deploy-quizap: ## Deploy Quizap to KIND cluster ##kind
+kind-deploy-quizap: ## Deploy Quizap to KIND cluster
 	@echo "$(GREEN)Deploying Quizap to KIND cluster...$(NC)"
-	helm install \
-		quizap deploy/charts/quizap \
-		--namespace quizap \
-		--create-namespace
+	kubectl apply -f argo-cd/quizap.yaml -n argo-cd
+	kubectl wait --for=jsonpath='{.status.sync.status}'=Synced application/quizap -n argo-cd --timeout=300s
+	kubectl wait --for=jsonpath='{.status.health.status}'=Healthy application/quizap -n argo-cd --timeout=300s
 	@echo "$(GREEN)Quizap deployed successfully!$(NC)"
 
-
 .PHONY: kind-cleanup
-kind-cleanup: ## Remove KIND cluster ##kind
+kind-cleanup: ## Remove KIND cluster
 	@echo "$(GREEN)Removing KIND cluster...$(NC)"
 	@if ! kind get clusters | grep -q "^kind$$"; then \
 		echo "$(YELLOW)KIND cluster 'kind' does not exist.$(NC)"; \
@@ -317,7 +315,7 @@ kind-cleanup: ## Remove KIND cluster ##kind
 	@echo "$(GREEN)KIND cluster 'kind' removed successfully!$(NC)"
 
 .PHONY: kind-kubeconfig
-kind-kubeconfig: ## Show KIND kubeconfig export command ##kind
+kind-kubeconfig: ## Show KIND kubeconfig export command
 	@echo "$(GREEN)To use KIND cluster with kubectl:$(NC)"
 	@echo "$(YELLOW)kubectl cluster-info --context kind-kind$(NC)"
 
