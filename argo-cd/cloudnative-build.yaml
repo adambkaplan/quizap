@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cloudnative-build
+  namespace: argo-cd
+spec:
+  destination:
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: charts/cloudnative-build
+    repoURL: https://github.com/adambkaplan/quizap-deployments.git
+    targetRevision: main
+    # Use helm values to test deployment changes in a pull request
+    # helm:
+    #   valuesObject:
+    #     shipwright:
+    #       targetRevision: build-strategies
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true

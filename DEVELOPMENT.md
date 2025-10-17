@@ -508,7 +508,7 @@ Before creating the KIND cluster, you need to configure your host system:
 
 For Linux users, add the following entry to your `/etc/hosts` file:
 ```
-127.0.0.1 registry.k8s.local
+127.0.0.1 argo-cd.k8s.local registry.k8s.local
 ```
 
 <!-- HELP WANTED: instructions for Docker on Windows + macOS -->
@@ -532,23 +532,40 @@ make kind-setup
 ```
 
 This command will:
+
 - Create a KIND cluster using the configuration in `deploy/kind/config.yaml`
-- Set up the necessary networking for the registry
-- Configure the cluster for Harbor and Shipwright deployment
+- Deploy ArgoCD
+- Set up the necessary networking and TLS infrastructure for the registry and Argo CD UI.
+- Establish a gateway for all `*.k8s.local` domains.
+- Establish an HTTP route for ArgoCD's UI at `argo-cd.k8s.local`
 
-### Harbor Registry Setup
+#### 4. Log into the ArgoCD UI
 
-#### 1. Deploy Harbor
+First, copy the admin user password for the ArgoCD web interface:
 
 ```bash
-# Deploy Harbor registry to the KIND cluster
-make kind-deploy-harbor
+kubectl -n argo-cd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+```
+
+_**WARNING: This admin secret should be changed or removed in production environments.**_
+
+Next, access the ArgoCD web interface at https://argo-cd.k8s.local. After providing the admin
+credentials, you should be able to see all ArgoCD Applications deployed on the cluster!
+
+### Cloud Native Build Stack Setup
+
+#### 1. Deploy Build Tools
+
+```bash
+# Deploy Tekton, Shipwright, and Harbor to the KIND cluster
+make kind-deploy-cloudnative-build
 ```
 
 This command will:
-- Install Harbor using Helm
-- Configure Harbor with the necessary settings
-- Set up the registry at `registry.k8s.local`
+
+- Install Harbor with necessary settings for ingress to `registry.k8s.local`
+- Install Tekton Pipelines
+- Install Shipwright
 
 #### 2. Access Harbor Web UI
 
@@ -588,30 +605,6 @@ kubectl create secret docker-registry harbor \
 ```
 
 Replace `<ROBOT_ACCOUNT_USERNAME>` and `<ROBOT_ACCOUNT_TOKEN>` with the credentials from the Harbor robot account.
-
-### Shipwright Setup
-
-#### 1. Deploy Shipwright
-
-```bash
-# Deploy Shipwright to the KIND cluster
-make kind-deploy-shipwright
-```
-
-This command will:
-- Install Shipwright using the project's configuration
-- Set up the necessary CRDs and controllers
-- Configure Shipwright to work with the KIND cluster
-
-#### 2. Verify Shipwright Installation
-
-```bash
-# Check if Shipwright is running
-kubectl get pods -n shipwright-build
-
-# Check Shipwright resources
-kubectl get clusterbuildstrategies
-```
 
 ### Build Quizap with Shipwright
 

@@ -1,0 +1,39 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: quizap
+  namespace: argo-cd
+spec:
+  destination:
+    namespace: quizap
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: charts/quizap
+    repoURL: https://github.com/adambkaplan/quizap-deployments.git
+    targetRevision: main
+    # Use helm values to test deployment changes dynamically
+    # helm:
+    #   valuesObject:
+    #     # Route configuration
+    #     route:
+    #       # Domain for the application
+    #       domain: quizap.k8s.local
+    #       # HTTP route configuration
+    #       http:
+    #         enabled: false
+    #       # HTTPS route configuration
+    #       https:
+    #         enabled: true
+    #         port: 443
+    #         # Parent Gateway reference (optional)
+    #         parentRef:
+    #           name: central-gateway 
+    #           namespace: central-gateway
+    #           sectionName: https-wildcard
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true

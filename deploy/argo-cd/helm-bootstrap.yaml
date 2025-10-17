@@ -1,0 +1,6 @@
+global:
+  domain: argo-cd.k8s.local
+
+configs:
+  params:
+    server.insecure: true

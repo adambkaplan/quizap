@@ -58,7 +58,7 @@ help: ## Display this help message
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z_-]+:.*##.*dev/ {printf "  $(GREEN)%-20s$(NC) %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 	@echo ""
 	@echo "$(YELLOW)KIND Commands:$(NC)"
-	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z_-]+:.*##.*kind/ {printf "  $(GREEN)%-20s$(NC) %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*##"} /^kind-[a-zA-Z_-]+:.*##/ {printf "  $(GREEN)%-20s$(NC) %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 	@echo ""
 	@echo "$(YELLOW)Utility Commands:$(NC)"
 	@awk 'BEGIN {FS = ":.*##"} /^[a-zA-Z_-]+:.*##.*utility/ {printf "  $(GREEN)%-20s$(NC) %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -270,77 +270,42 @@ setup: install ## Complete setup for new contributors
 ##@ KIND Commands
 
 .PHONY: kind-setup
-kind-setup: ## Deploy KIND cluster using deploy/kind/config.yaml ##kind
+kind-setup: ## Deploy cluster with ArgoCD App of Apps
 	@echo "$(GREEN)Deploying KIND cluster...$(NC)"
 	@if kind get clusters | grep -q "^kind$$"; then \
 		echo "$(YELLOW)KIND cluster 'kind' already exists. Use 'make kind-cleanup' to remove it first.$(NC)"; \
 		exit 1; \
 	fi
 	kind create cluster --config deploy/kind/config.yaml --name kind
-	@echo "$(YELLOW)Applying Gateway APIs...$(NC)"
-	kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/standard-install.yaml
-	@echo "$(YELLOW)Waiting for Gateway API CRDs to be established...$(NC)"
-	kubectl wait --for=condition=Established --timeout=300s crd/gatewayclasses.gateway.networking.k8s.io
-	kubectl wait --for=condition=Established --timeout=300s crd/gateways.gateway.networking.k8s.io
-	kubectl wait --for=condition=Established --timeout=300s crd/httproutes.gateway.networking.k8s.io
-	@echo "$(GREEN)Gateway API CRDs are ready!$(NC)"
-	@echo "$(YELLOW) Installing cert-manager...$(NC)"
-	helm install \
-  		cert-manager oci://quay.io/jetstack/charts/cert-manager \
-  		--version v1.19.0 \
-  		--namespace cert-manager \
-  		--create-namespace \
-  		--values deploy/cert-manager/helm-values.yaml
-	helm install \
-	  ngninx-gateway-fabric oci://ghcr.io/nginx/charts/nginx-gateway-fabric \
-	  --namespace nginx-gateway \
-	  --create-namespace \
-	  --values deploy/nginx-gateway-fabric/helm-values.yaml
-	@echo "$(YELLOW)Deploying k8s.local certificate authority...$(NC)"
-	helm install \
-		k8s-local-ca deploy/charts/k8s-local-ca \
-		--namespace cert-manager \
-		--create-namespace
-	@echo "$(YELLOW)Waiting for CA certificate to be ready...$(NC)"
-	kubectl wait --for=condition=Ready --timeout=300s certificate/k8s-local-ca -n cert-manager
-	@echo "$(YELLOW)Deploying k8s.local gateway...$(NC)"
-	kubectl create ns k8s-local
-	kubectl apply -f deploy/k8s-local-gateway/gateway.yaml
-	@echo "$(YELLOW)Waiting for gateway to be ready...$(NC)"
-	kubectl wait --for=condition=Programmed --timeout=300s gateway/k8s-local-gateway -n k8s-local
-
-.PHONY: kind-deploy-harbor
-kind-deploy-harbor: ## Deploy Harbor to KIND cluster ##kind
-	@echo "$(GREEN)Deploying Harbor to KIND cluster...$(NC)"
-	helm repo add harbor https://helm.goharbor.io
-	helm install \
-		harbor harbor/harbor \
-		--namespace harbor \
+	@echo "$(YELLOW)Deploying ArgoCD to bootstrap KIND cluster...$(NC)"
+	helm install argo-cd oci://ghcr.io/argoproj/argo-helm/argo-cd \
+		--version 8.6.3 \
+		--namespace argo-cd \
 		--create-namespace \
-		--values deploy/harbor/helm-values.yaml
-	kubectl apply -f deploy/harbor/gateway-client-settings.yaml -n harbor
-	@echo "$(GREEN)Harbor deployed successfully!$(NC)"
+		--values deploy/argo-cd/helm-bootstrap.yaml
+	kubectl apply -f argo-cd/bootstrap.yaml -n argo-cd
+	kubectl wait --for=jsonpath='{.status.sync.status}'=Synced application/bootstrap -n argo-cd --timeout=300s
+	kubectl wait --for=jsonpath='{.status.health.status}'=Healthy application/bootstrap -n argo-cd --timeout=300s
+	@echo "$(GREEN)ArgoCD bootstrap deployed successfully!$(NC)"
+
+.PHONY: kind-deploy-cloudnative-build
+kind-deploy-cloudnative-build: ## Deploy Cloud Native Build Stack to KIND cluster
+	@echo "$(GREEN)Deploying Cloud Native Build Stack to KIND cluster...$(NC)"
+	kubectl apply -f argo-cd/cloudnative-build.yaml -n argo-cd
+	kubectl wait --for=jsonpath='{.status.sync.status}'=Synced application/cloudnative-build -n argo-cd --timeout=300s
+	kubectl wait --for=jsonpath='{.status.health.status}'=Healthy application/cloudnative-build -n argo-cd --timeout=300s
+	@echo "$(GREEN)Cloud Native Build stack deployed successfully!$(NC)"
 
 .PHONY: kind-deploy-quizap
-kind-deploy-quizap: ## Deploy Quizap to KIND cluster ##kind
+kind-deploy-quizap: ## Deploy Quizap to KIND cluster
 	@echo "$(GREEN)Deploying Quizap to KIND cluster...$(NC)"
-	helm install \
-		quizap deploy/charts/quizap \
-		--namespace quizap \
-		--create-namespace
+	kubectl apply -f argo-cd/quizap.yaml -n argo-cd
+	kubectl wait --for=jsonpath='{.status.sync.status}'=Synced application/quizap -n argo-cd --timeout=300s
+	kubectl wait --for=jsonpath='{.status.health.status}'=Healthy application/quizap -n argo-cd --timeout=300s
 	@echo "$(GREEN)Quizap deployed successfully!$(NC)"
 
-.PHONY: kind-deploy-shipwright
-kind-deploy-shipwright: ## Deploy Shipwright to KIND cluster ##kind
-	@echo "$(GREEN)Deploying Shipwright and Tekton to KIND cluster...$(NC)"
-	kubectl apply -k deploy/tekton
-	kubectl apply -k deploy/shipwright --server-side
-	kubectl wait --for=condition=Established --timeout=300s crd/clusterbuildstrategies.shipwright.io
-	kubectl apply -k deploy/shipwright-strategies
-	@echo "$(GREEN)Shipwright deployed successfully!$(NC)"
-
 .PHONY: kind-cleanup
-kind-cleanup: ## Remove KIND cluster ##kind
+kind-cleanup: ## Remove KIND cluster
 	@echo "$(GREEN)Removing KIND cluster...$(NC)"
 	@if ! kind get clusters | grep -q "^kind$$"; then \
 		echo "$(YELLOW)KIND cluster 'kind' does not exist.$(NC)"; \
@@ -350,7 +315,7 @@ kind-cleanup: ## Remove KIND cluster ##kind
 	@echo "$(GREEN)KIND cluster 'kind' removed successfully!$(NC)"
 
 .PHONY: kind-kubeconfig
-kind-kubeconfig: ## Show KIND kubeconfig export command ##kind
+kind-kubeconfig: ## Show KIND kubeconfig export command
 	@echo "$(GREEN)To use KIND cluster with kubectl:$(NC)"
 	@echo "$(YELLOW)kubectl cluster-info --context kind-kind$(NC)"
 
