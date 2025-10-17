@@ -289,16 +289,12 @@ kind-setup: ## Deploy KIND cluster using deploy/kind/config.yaml ##kind
 	@echo "$(GREEN)ArgoCD bootstrap deployed successfully!$(NC)"
 
 .PHONY: kind-deploy-harbor
-kind-deploy-harbor: ## Deploy Harbor to KIND cluster ##kind
-	@echo "$(GREEN)Deploying Harbor to KIND cluster...$(NC)"
-	helm repo add harbor https://helm.goharbor.io
-	helm install \
-		harbor harbor/harbor \
-		--namespace harbor \
-		--create-namespace \
-		--values deploy/harbor/helm-values.yaml
-	kubectl apply -f deploy/harbor/gateway-client-settings.yaml -n harbor
-	@echo "$(GREEN)Harbor deployed successfully!$(NC)"
+kind-deploy-cloudnative-build: ## Deploy Harbor to KIND cluster ##kind
+	@echo "$(GREEN)Deploying Cloud Native Build Stack to KIND cluster...$(NC)"
+	kubectl apply -f argo-cd/cloudnative-build.yaml -n argo-cd
+	kubectl wait --for=jsonpath='{.status.sync.status}'=Synced application/cloudnative-build -n argo-cd --timeout=300s
+	kubectl wait --for=jsonpath='{.status.health.status}'=Healthy application/cloudnative-build -n argo-cd --timeout=300s
+	@echo "$(GREEN)Cloud Native Build stack deployed successfully!$(NC)"
 
 .PHONY: kind-deploy-quizap
 kind-deploy-quizap: ## Deploy Quizap to KIND cluster ##kind
@@ -309,14 +305,6 @@ kind-deploy-quizap: ## Deploy Quizap to KIND cluster ##kind
 		--create-namespace
 	@echo "$(GREEN)Quizap deployed successfully!$(NC)"
 
-.PHONY: kind-deploy-shipwright
-kind-deploy-shipwright: ## Deploy Shipwright to KIND cluster ##kind
-	@echo "$(GREEN)Deploying Shipwright and Tekton to KIND cluster...$(NC)"
-	kubectl apply -k deploy/tekton
-	kubectl apply -k deploy/shipwright --server-side
-	kubectl wait --for=condition=Established --timeout=300s crd/clusterbuildstrategies.shipwright.io
-	kubectl apply -k deploy/shipwright-strategies
-	@echo "$(GREEN)Shipwright deployed successfully!$(NC)"
 
 .PHONY: kind-cleanup
 kind-cleanup: ## Remove KIND cluster ##kind
