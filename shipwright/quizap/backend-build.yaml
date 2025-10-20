@@ -14,7 +14,7 @@ spec:
   
   # Build strategy using buildpacks
   strategy:
-    name: ko
+    name: ko-xl
     kind: ClusterBuildStrategy
   
   # Output image configuration

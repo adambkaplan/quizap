@@ -42,6 +42,9 @@ IMAGE_TAG := "latest"
 # IMAGE_PUSH: push container images to the registry during the build
 IMAGE_PUSH := "false"
 
+# INSECURE_REGISTRY: whether to skip TLS verification for the registry
+INSECURE_REGISTRY := "false"
+
 ##@ Development Commands
 
 .PHONY: help
@@ -80,7 +83,11 @@ backend-build: ## Build the backend binary
 .PHONY: backend-build-container
 backend-build-container: ## Build the backend container with ko
 	@echo "$(GREEN)Building backend container with ko...$(NC)"
-	cd backend && KO_DOCKER_REPO="$(IMAGE_REPO)" ko build . --base-import-paths --push=$(IMAGE_PUSH)
+	cd backend && go clean -cache && KO_DOCKER_REPO="$(IMAGE_REPO)" ko build . \
+	  --base-import-paths \
+	  --push=$(IMAGE_PUSH) \
+	  --tags=$(IMAGE_TAG) \
+	  --insecure-registry=$(INSECURE_REGISTRY)
 
 .PHONY: backend-run
 backend-run: ## Run the backend server
@@ -132,9 +139,12 @@ frontend-build-container: ## Build the frontend container with pack
 	@echo "$(GREEN)Building frontend container with pack...$(NC)"
 	pack build "$(IMAGE_REPO)/frontend:$(IMAGE_TAG)" \
 	  --path $(FRONTEND_DIR) \
-	  --builder docker.io/paketobuildpacks/builder-jammy-base:latest \
+	  --builder docker.io/paketobuildpacks/builder-jammy-base:0.4.479 \
 	  --docker-host $(PACK_DOCKER_HOST) \
-	  --publish=$(IMAGE_PUSH)
+	  --publish=$(IMAGE_PUSH) \
+	  --network host \
+	  --insecure-registry=registry.k8s.local \
+	  --verbose
 
 .PHONY: frontend-run-container
 frontend-run-container: ## Run the frontend in a container
