@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { Route, Routes } from 'react-router-dom';
-import { Dashboard } from '@app/Dashboard/Dashboard';
+import { Welcome } from '@app/Welcome/Welcome';
+import { QuizList } from '@app/QuizList/QuizList';
+import { QuizLanding } from '@app/QuizLanding/QuizLanding';
 import { Support } from '@app/Support/Support';
 import { GeneralSettings } from '@app/Settings/General/GeneralSettings';
 import { ProfileSettings } from '@app/Settings/Profile/ProfileSettings';
@@ -24,18 +26,31 @@ export type AppRouteConfig = IAppRoute | IAppRouteGroup;
 
 const routes: AppRouteConfig[] = [
   {
-    element: <Dashboard />,
+    element: <Welcome />,
     exact: true,
-    label: 'Dashboard',
+    label: 'Welcome',
     path: '/',
-    title: 'PatternFly Seed | Main Dashboard',
+    title: 'QuiZap | Welcome',
+  },
+  {
+    element: <QuizList />,
+    exact: true,
+    label: 'Quizzes',
+    path: '/quizzes',
+    title: 'QuiZap | Quiz List',
+  },
+  {
+    element: <QuizLanding />,
+    exact: true,
+    path: '/quiz/:quizId',
+    title: 'QuiZap | Quiz Details',
   },
   {
     element: <Support />,
     exact: true,
     label: 'Support',
     path: '/support',
-    title: 'PatternFly Seed | Support Page',
+    title: 'QuiZap | Support Page',
   },
   {
     label: 'Settings',
@@ -45,14 +60,14 @@ const routes: AppRouteConfig[] = [
         exact: true,
         label: 'General',
         path: '/settings/general',
-        title: 'PatternFly Seed | General Settings',
+        title: 'QuiZap | General Settings',
       },
       {
         element: <ProfileSettings />,
         exact: true,
         label: 'Profile',
         path: '/settings/profile',
-        title: 'PatternFly Seed | Profile Settings',
+        title: 'QuiZap | Profile Settings',
       },
     ],
   },

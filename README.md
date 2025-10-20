@@ -1,6 +1,7 @@
-# quizap
+# QuiZap
 
 QuiZap - An online quiz game!
+
 
 ## Components
 
