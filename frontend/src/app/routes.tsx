@@ -3,6 +3,7 @@ import { Route, Routes } from 'react-router-dom';
 import { Welcome } from '@app/Welcome/Welcome';
 import { QuizList } from '@app/QuizList/QuizList';
 import { QuizLanding } from '@app/QuizLanding/QuizLanding';
+import { QuizTaking } from '@app/QuizTaking/QuizTaking';
 import { Support } from '@app/Support/Support';
 import { GeneralSettings } from '@app/Settings/General/GeneralSettings';
 import { ProfileSettings } from '@app/Settings/Profile/ProfileSettings';
@@ -44,6 +45,12 @@ const routes: AppRouteConfig[] = [
     exact: true,
     path: '/quiz/:quizId',
     title: 'QuiZap | Quiz Details',
+  },
+  {
+    element: <QuizTaking />,
+    exact: true,
+    path: '/quiz/:quizId/take',
+    title: 'QuiZap | Taking Quiz',
   },
   {
     element: <Support />,

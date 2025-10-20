@@ -153,9 +153,7 @@ const QuizLanding: React.FunctionComponent = () => {
   };
 
   const handleStartQuiz = () => {
-    // TODO: Navigate to actual quiz taking interface
-    console.log(`Starting quiz: ${quizId}`);
-    alert(`Starting quiz: ${quiz?.title}`);
+    navigate(`/quiz/${quizId}/take`);
   };
 
   const getDifficultyColor = (difficulty: string) => {
