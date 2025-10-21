@@ -17,6 +17,15 @@ import { ArrowLeftIcon, PlayIcon } from '@patternfly/react-icons';
 // Mock quiz data - in a real app, this would come from an API
 const mockQuizzes = [
   {
+    id: 'building-containers',
+    title: 'Building Containers',
+    description: 'How many ways can you build and deploy containers?',
+    difficulty: 'Beginner',
+    questions: 10,
+    duration: '15 minutes',
+    category: 'Application Development',
+  },
+  {
     id: 'kubernetes-basics',
     title: 'Kubernetes Fundamentals',
     description: 'Test your knowledge of Kubernetes core concepts, pods, services, and deployments.',

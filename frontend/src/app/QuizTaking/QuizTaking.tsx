@@ -22,6 +22,64 @@ import { ArrowLeftIcon, CheckCircleIcon, TimesCircleIcon } from '@patternfly/rea
 
 // Mock quiz questions data
 const mockQuizQuestions = {
+  'building-containers': [
+    {
+      id: 1,
+      question: "What is a container image?",
+      options: [
+        "A lightweight virtual machine",
+        "A filesystem with metadata",
+        "A picture of a metal box"
+      ],
+      correctAnswer: 1,
+      explanation: "A container image is defined by the Open Container Initiative (OCI) image specification. It is not a virtual machine or a picture of a shipping container."
+    },
+    {
+      id: 2,
+      question: "Where can I find container images?",
+      options: [
+        "On a container registry",
+        "On ChatGPT with the right prompt",
+        "On an image search website like Creative Commons Search",
+      ],
+      correctAnswer: 0,
+      explanation: "Container images are stored on container registries."
+    },
+    {
+      id: 3,
+      question: "Is a Dockerfile required to build a container image?",
+      options: [
+        "Yes",
+        "No",
+        "I want to say 'Yes', but I think the professor wants me to say 'No'"
+      ],
+      correctAnswer: 1,
+      explanation: "A Dockerfile is not required to build a container image! There are many tools that can build images directly from source code, such as Cloud Native Buildpacks and ko."
+    },
+    {
+      id: 4,
+      question: "Containers cannot be built within a containerized environment.",
+      options: [
+        "True",
+        "False"
+      ],
+      correctAnswer: 1,
+      explanation: "Containers can be built within a containerized environment, depending on the tool and container runtime configuration."
+    },
+    {
+      id: 5,
+      question: "Which command can deploy a container image to Kubernetes?",
+      options: [
+        "kubectl apply -f <filename>.yaml",
+        "kubectl apply -k <path/to/kustomization>",
+        "helm install <release-name> <chart-name>",
+        "argocd app sync <app-name>",
+        "All of the above",
+      ],
+      correctAnswer: 4,
+      explanation: "All of the above commands can be used to deploy a container image to Kubernetes!"
+    }
+  ],
   'kubernetes-basics': [
     {
       id: 1,

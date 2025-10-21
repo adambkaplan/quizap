@@ -19,6 +19,23 @@ import { ArrowLeftIcon, PlayIcon, ClockIcon, QuestionCircleIcon } from '@pattern
 
 // Mock quiz data - in a real app, this would come from an API
 const mockQuizDetails = {
+  'building-containers': {
+    title: 'Building Containers',
+    description: 'How many ways can you build and deploy containers?',
+    difficulty: 'Beginner',
+    questions: 10,
+    duration: '15 minutes',
+    category: 'Application Development',
+    topics: [
+      'Container Build Tools',
+      'Container Registries',
+      'Cloud Native CI/CD',
+      'GitOps',
+    ],
+    prerequisites: [
+      'None',
+    ]
+  },
   'kubernetes-basics': {
     title: 'Kubernetes Fundamentals',
     description: 'Test your knowledge of Kubernetes core concepts, pods, services, and deployments. This comprehensive quiz covers the essential building blocks of Kubernetes that every cloud native practitioner should know.',
