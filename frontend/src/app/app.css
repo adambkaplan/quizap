@@ -4,8 +4,59 @@ body,
   height: 100%;
 }
 
+/* CNCF Brand Colors */
+:root {
+  --cncf-blue: #0086FF;
+  --cncf-black: #000000;
+  --cncf-turquoise: #93EAFF;
+  --cncf-pink: #D62293;
+  --cncf-stone: #E5E5E5;
+  --cncf-cloud-white: #FFFFFF;
+}
+
+/* CNCF Brand Styling */
 .pf-v6-c-content {
-  --pf-v6-c-content--small--Color: var(--pf-t--global--color--status--danger--default); /* changes all <small> color to the semantic token for danger */
-  --pf-v6-c-content--blockquote--BorderLeftColor: var(--pf-t--global--color--nonstatus--purple--default); /* changes all <blockquote> left border color to the semantic token for non-status (purple) */
-  --pf-v6-c-content--hr--BackgroundColor: var(--pf-t--global--color--nonstatus--yellow--default); /* changes a <hr> color to the semantic token for non-status (yellow) */
+  --pf-v6-c-content--small--Color: var(--cncf-blue); /* CNCF blue for small text */
+  --pf-v6-c-content--blockquote--BorderLeftColor: var(--cncf-blue); /* CNCF blue for blockquote borders */
+  --pf-v6-c-content--hr--BackgroundColor: var(--cncf-stone); /* CNCF stone for horizontal rules */
+}
+
+/* CNCF Masthead Branding */
+.cncf-masthead {
+  background-color: var(--cncf-cloud-white);
+  border-bottom: 2px solid var(--cncf-blue);
+}
+
+.cncf-brand-text {
+  color: var(--cncf-black);
+  font-family: 'Clarity City', sans-serif;
+  font-weight: 600;
+}
+
+/* CNCF Button Styling */
+.cncf-primary-button {
+  background-color: var(--cncf-blue);
+  border-color: var(--cncf-blue);
+  color: var(--cncf-cloud-white);
+}
+
+.cncf-primary-button:hover {
+  background-color: var(--cncf-turquoise);
+  border-color: var(--cncf-turquoise);
+  color: var(--cncf-black);
+}
+
+/* CNCF Navigation Styling */
+.cncf-nav-item {
+  color: var(--cncf-black);
+}
+
+.cncf-nav-item:hover {
+  color: var(--cncf-blue);
+  background-color: var(--cncf-stone);
+}
+
+.cncf-nav-item.active {
+  color: var(--cncf-blue);
+  background-color: var(--cncf-turquoise);
 }

@@ -91,6 +91,20 @@ When importing CSS from a third-party package for the first time, you may encoun
 * To keep our code logic and test coverage in check, we use [jest](https://github.com/facebook/jest)
 * To ensure code styles remain consistent, we use [eslint](https://eslint.org/)
 
+## AI Documentation & Development Rules
+
+This project includes an [`ai-documentation`](./ai-documentation/README.md) directory designed primarily for use by AI agents in AI-enabled IDEs (such as Cursor, Claude, and others). These files provide essential rules, guidelines, and best practices for building web applications with PatternFly React, enabling AI coding assistants to:
+
+- Offer context-aware suggestions and enforce consistent component architecture and styling standards
+- Guide developers to use PatternFly v6 components and utility classes
+- Promote accessibility and state management best practices
+- Reference troubleshooting tips and specialized rules (charts, chatbot, etc.)
+
+**How to use:**
+If you are using an AI-enabled IDE, the AI agent will automatically leverage the [AI Documentation & Rules](./ai-documentation/README.md) to assist you as you develop.
+
+By following these rules—either directly or via your AI assistant—you'll ensure your app is maintainable, accessible, and consistent with PatternFly best practices.
+
 ## Multi environment configuration
 This project uses [dotenv-webpack](https://www.npmjs.com/package/dotenv-webpack) for exposing environment variables to your code. Either export them at the system level like `export MY_ENV_VAR=http://dev.myendpoint.com && npm run start:dev` or simply drop a `.env` file in the root that contains your key-value pairs like below:
 

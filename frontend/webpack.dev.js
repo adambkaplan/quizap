@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 
-const path = require('path');
-const { merge } = require('webpack-merge');
-const common = require('./webpack.common.js');
-const { stylePaths } = require('./stylePaths');
+import path from 'path';
+import { merge } from 'webpack-merge';
+import common from './webpack.common.js';
+import { stylePaths } from './stylePaths.js';
 const HOST = process.env.HOST || 'localhost';
 const PORT = process.env.PORT || '9000';
 
-module.exports = merge(common('development'), {
+export default merge(common('development'), {
   mode: 'development',
   devtool: 'eval-source-map',
   devServer: {
@@ -16,7 +16,7 @@ module.exports = merge(common('development'), {
     historyApiFallback: true,
     open: true,
     static: {
-      directory: path.resolve(__dirname, 'dist'),
+      directory: path.resolve('./dist'),
     },
     client: {
       overlay: true,

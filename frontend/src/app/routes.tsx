@@ -1,6 +1,9 @@
 import * as React from 'react';
 import { Route, Routes } from 'react-router-dom';
-import { Dashboard } from '@app/Dashboard/Dashboard';
+import { Welcome } from '@app/Welcome/Welcome';
+import { QuizList } from '@app/QuizList/QuizList';
+import { QuizLanding } from '@app/QuizLanding/QuizLanding';
+import { QuizTaking } from '@app/QuizTaking/QuizTaking';
 import { Support } from '@app/Support/Support';
 import { GeneralSettings } from '@app/Settings/General/GeneralSettings';
 import { ProfileSettings } from '@app/Settings/Profile/ProfileSettings';
@@ -8,9 +11,7 @@ import { NotFound } from '@app/NotFound/NotFound';
 
 export interface IAppRoute {
   label?: string; // Excluding the label will exclude the route from the nav sidebar in AppLayout
-  /* eslint-disable @typescript-eslint/no-explicit-any */
   element: React.ReactElement;
-  /* eslint-enable @typescript-eslint/no-explicit-any */
   exact?: boolean;
   path: string;
   title: string;
@@ -26,18 +27,37 @@ export type AppRouteConfig = IAppRoute | IAppRouteGroup;
 
 const routes: AppRouteConfig[] = [
   {
-    element: <Dashboard />,
+    element: <Welcome />,
     exact: true,
-    label: 'Dashboard',
+    label: 'Welcome',
     path: '/',
-    title: 'PatternFly Seed | Main Dashboard',
+    title: 'QuiZap | Welcome',
+  },
+  {
+    element: <QuizList />,
+    exact: true,
+    label: 'Quizzes',
+    path: '/quizzes',
+    title: 'QuiZap | Quiz List',
+  },
+  {
+    element: <QuizLanding />,
+    exact: true,
+    path: '/quiz/:quizId',
+    title: 'QuiZap | Quiz Details',
+  },
+  {
+    element: <QuizTaking />,
+    exact: true,
+    path: '/quiz/:quizId/take',
+    title: 'QuiZap | Taking Quiz',
   },
   {
     element: <Support />,
     exact: true,
     label: 'Support',
     path: '/support',
-    title: 'PatternFly Seed | Support Page',
+    title: 'QuiZap | Support Page',
   },
   {
     label: 'Settings',
@@ -47,14 +67,14 @@ const routes: AppRouteConfig[] = [
         exact: true,
         label: 'General',
         path: '/settings/general',
-        title: 'PatternFly Seed | General Settings',
+        title: 'QuiZap | General Settings',
       },
       {
         element: <ProfileSettings />,
         exact: true,
         label: 'Profile',
         path: '/settings/profile',
-        title: 'PatternFly Seed | Profile Settings',
+        title: 'QuiZap | Profile Settings',
       },
     ],
   },

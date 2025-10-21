@@ -1,0 +1,12 @@
+{
+    "mcpServers": {
+        "context7": {
+            "url": "https://mcp.context7.com/mcp"
+        },
+        "patternfly-docs": {
+            "command": "npx",
+            "args": ["-y", "@jephilli-patternfly-docs/mcp@latest"],
+            "description": "PatternFly React development rules and documentation"
+        }
+    }
+}
