@@ -1,21 +1,21 @@
 import * as React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { 
-  PageSection, 
-  Title, 
-  Card, 
-  CardBody, 
-  CardHeader, 
-  CardTitle, 
-  Button, 
   Badge,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  CardTitle,
   Divider,
+  Grid,
+  GridItem,
   List,
   ListItem,
-  Grid,
-  GridItem
+  PageSection,
+  Title
 } from '@patternfly/react-core';
-import { ArrowLeftIcon, PlayIcon, ClockIcon, QuestionCircleIcon } from '@patternfly/react-icons';
+import { ArrowLeftIcon, ClockIcon, PlayIcon, QuestionCircleIcon } from '@patternfly/react-icons';
 
 // Mock quiz data - in a real app, this would come from an API
 const mockQuizDetails = {

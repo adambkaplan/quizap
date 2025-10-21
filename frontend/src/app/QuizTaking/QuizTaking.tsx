@@ -1,24 +1,20 @@
 import * as React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { 
-  PageSection, 
-  Title, 
-  Card, 
-  CardBody, 
-  CardHeader, 
-  CardTitle, 
-  Button, 
+  Alert,
   Badge,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  CardTitle,
   Divider,
-  List,
-  ListItem,
-  Grid,
-  GridItem,
-  Radio,
+  PageSection,
   Progress,
-  Alert
+  Radio,
+  Title
 } from '@patternfly/react-core';
-import { ArrowLeftIcon, CheckCircleIcon, TimesCircleIcon } from '@patternfly/react-icons';
+import { ArrowLeftIcon } from '@patternfly/react-icons';
 
 // Mock quiz questions data
 const mockQuizQuestions = {

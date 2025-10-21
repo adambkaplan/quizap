@@ -1,16 +1,16 @@
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  PageSection, 
-  Title, 
-  Card, 
-  CardBody, 
-  CardHeader, 
-  CardTitle, 
-  Button, 
-  Grid, 
+  Badge,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  CardTitle,
+  Grid,
   GridItem,
-  Badge
+  PageSection,
+  Title
 } from '@patternfly/react-core';
 import { ArrowLeftIcon, PlayIcon } from '@patternfly/react-icons';
 

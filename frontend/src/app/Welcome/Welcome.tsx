@@ -1,17 +1,17 @@
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  PageSection, 
-  Title, 
-  Card, 
-  CardBody, 
-  CardHeader, 
-  CardTitle, 
-  Button, 
-  Grid, 
-  GridItem
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  CardTitle,
+  Grid,
+  GridItem,
+  PageSection,
+  Title
 } from '@patternfly/react-core';
-import { PlusIcon, PlayIcon } from '@patternfly/react-icons';
+import { PlayIcon, PlusIcon } from '@patternfly/react-icons';
 
 const Welcome: React.FunctionComponent = () => {
   const navigate = useNavigate();

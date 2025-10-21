@@ -38,7 +38,7 @@ describe('App tests', () => {
       window.dispatchEvent(new Event('resize'));
     });
 
-    expect(screen.getByRole('link', { name: 'Dashboard' })).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Welcome' })).toBeVisible();
   });
 
   it('should hide the sidebar when clicking the nav-toggle button', async () => {
@@ -51,10 +51,10 @@ describe('App tests', () => {
     });
     const button = screen.getByRole('button', { name: 'Global navigation' });
 
-    expect(screen.getByRole('link', { name: 'Dashboard' })).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Welcome' })).toBeVisible();
 
     await user.click(button);
 
-    expect(screen.queryByRole('link', { name: 'Dashboard' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Welcome' })).not.toBeInTheDocument();
   });
 });
