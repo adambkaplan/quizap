@@ -12,7 +12,7 @@ spec:
       revision: main
     contextDir: backend
   
-  # Build strategy using buildpacks
+  # Build strategy using ko
   strategy:
     name: ko-xl
     kind: ClusterBuildStrategy
