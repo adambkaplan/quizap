@@ -21,7 +21,7 @@ const mockQuizzes = [
     title: 'Building Containers',
     description: 'How many ways can you build and deploy containers?',
     difficulty: 'Beginner',
-    questions: 10,
+    questions: 6,
     duration: '15 minutes',
     category: 'Application Development',
   },

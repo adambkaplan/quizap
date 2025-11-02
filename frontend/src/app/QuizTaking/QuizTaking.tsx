@@ -74,6 +74,18 @@ const mockQuizQuestions = {
       ],
       correctAnswer: 4,
       explanation: "All of the above commands can be used to deploy a container image to Kubernetes!"
+    },
+    {
+      id: 6,
+      question: "How many ways can you build and deploy containers?",
+      options: [
+        "15",
+        "50",
+        "67",
+        ">192"
+      ],
+      correctAnswer: 3,
+      explanation: "We showed at least 192 ways today - and there are certainly many more!"
     }
   ],
   'kubernetes-basics': [
