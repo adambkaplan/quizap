@@ -8,7 +8,7 @@ Notes on how I presented this application at KubeCon + CloudNativeCon North Amer
    changes to get all components and DNS routes for `*.k8s.local` working.
 2. Run `make kind-setup` to deploy a KIND cluster locally with ArgoCD + Gateway API.
 3. Run `make kind-deploy-cloudnative-build` to deploy Tekton, Shipwright, and Harbor.
-4. Log into the [ArgoCD console](https://argocd.k8s.local). Check that all Applications are synced
+4. Log into the [ArgoCD console](https://argo-cd.k8s.local). Check that all Applications are synced
    and are healthy (some may need a refresh to get healthy).
 5. Run `make kind-deploy-quizap` to deploy the quizap application.
 6. Create the namespace `quizap-dev`
