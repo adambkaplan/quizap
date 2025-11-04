@@ -32,6 +32,16 @@ const mockQuizQuestions = {
     },
     {
       id: 2,
+      question: "A Dockerfile is a required to build a container image.",
+      options: [
+        "True",
+        "False",
+      ],
+      correctAnswer: 1,
+      explanation: "A Dockerfile is not required to build a container image! There are many tools that can build images directly from source code, such as Cloud Native Buildpacks and ko. However, a Dockerfile is a common way to build a container image."
+    },
+    {
+      id: 3,
       question: "Where can I find container images?",
       options: [
         "On a container registry",
@@ -40,17 +50,6 @@ const mockQuizQuestions = {
       ],
       correctAnswer: 0,
       explanation: "Container images are stored on container registries."
-    },
-    {
-      id: 3,
-      question: "Is a Dockerfile required to build a container image?",
-      options: [
-        "Yes",
-        "No",
-        "I want to say 'Yes', but I think the professor wants me to say 'No'"
-      ],
-      correctAnswer: 1,
-      explanation: "A Dockerfile is not required to build a container image! There are many tools that can build images directly from source code, such as Cloud Native Buildpacks and ko."
     },
     {
       id: 4,
@@ -79,7 +78,7 @@ const mockQuizQuestions = {
       id: 6,
       question: "How many ways can you build and deploy containers?",
       options: [
-        "15",
+        "17",
         "50",
         "67",
         ">192"
