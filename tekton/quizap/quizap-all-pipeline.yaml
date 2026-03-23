@@ -1,0 +1,17 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: quizap-all
+  namespace: quizap-dev
+spec:
+  tasks:
+    - name: build-frontend
+      taskRef:
+        apiVersion: shipwright.io/v1beta1
+        kind: Build
+        name: quizap-frontend
+    - name: build-backend
+      taskRef:
+        apiVersion: shipwright.io/v1beta1
+        kind: Build
+        name: quizap-backend
