@@ -449,6 +449,29 @@ Invoke-WebRequest -Uri "https://github.com/shipwright-io/cli/releases/latest/dow
 # Move shp.exe to a directory in your PATH
 ```
 
+#### Installing Tekton CLI (tkn)
+
+**Linux**
+
+```bash
+# Get the tar.xz
+curl -LO https://github.com/tektoncd/cli/releases/download/v0.44.0/tkn_0.44.0_Linux_x86_64.tar.gz
+# Extract tkn to your PATH (e.g. /usr/local/bin)
+sudo tar xvzf tkn_0.44.0_Linux_x86_64.tar.gz -C /usr/local/bin/ tkn
+```
+
+**MacOS (using Homebrew)**
+
+```bash
+brew install tektoncd-cli
+```
+
+**Windows (using Chocolatey)**
+
+```bash
+choco install tektoncd-cli --confirm
+```
+
 #### Installing Helm
 
 **Linux/macOS (using Homebrew):**
@@ -613,15 +636,24 @@ Replace `<ROBOT_ACCOUNT_USERNAME>` and `<ROBOT_ACCOUNT_TOKEN>` with the credenti
 ```bash
 # Apply the quizap manifests to the cluster
 kubectl apply -f shipwright/quizap/
+kubectl apply -f tekton/quizap/
 ```
 
 This will create the necessary Build configurations for the frontend and backend applications.
 
 #### 2. Run the Build
 
+Either run the builds individually with the `shp ` command line:
+
 ```bash
 shp build run quizap-backend -n quizap-dev
 shp build run quizap-frontend -n quizap-dev
+```
+
+OR run the builds together in a single pipeline with Tekton:
+
+```bash
+tkn pipeline start quizap-all -n quizap-dev
 ```
 
 #### 3. Monitor the Build
